@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Menu',
+                  'O que você quer fazer?',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,

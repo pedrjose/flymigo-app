@@ -1,16 +1,9 @@
-# flymigo
+# Flymigo
 
-A new Flutter project.
+## Introdução
 
-## Getting Started
+Flymigo é um aplicativo multiplataforma que permite com que usuários possam simular viagem aéreas e visualizar relatórios detalhados sobre as suas viagens através de um ID gerado ao criar uma viagem.
 
-This project is a starting point for a Flutter application.
+![Flymigo - Web Mockup 1](./assets/mock1.png)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+As simulações e relatórios são criados com base nas chamadas assíncronas de uma API que simula o ambiente de viagens aéreas. O aplicativo permite que os usuários escolham uma origem, destino, data de partida e data de retorno, entre outras seleções.
