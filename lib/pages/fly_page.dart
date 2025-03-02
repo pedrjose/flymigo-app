@@ -10,19 +10,20 @@ class FlyPage extends StatefulWidget {
 class _FlyPageState extends State<FlyPage> {
   List<String> airports = [];
   List<String> airlines = ['AMERICAN AIRLINES', 'GOL', 'IBERIA', 'INTERLINE', 'LATAM', 'AZUL', 'TAP'];
-  
+
   final TextEditingController _flyAirline = TextEditingController();
   final TextEditingController _originAirport = TextEditingController();
   final TextEditingController _destinationAirport = TextEditingController();
   final TextEditingController _departureDateController = TextEditingController();
   final TextEditingController _returnDateController = TextEditingController();
-  
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   DateTime? _departureDate;
   DateTime? _returnDate;
 
   String? _tripType = 'Ida';
+  String? _responseMessage;
 
   @override
   void initState() {
@@ -65,15 +66,11 @@ class _FlyPageState extends State<FlyPage> {
 
       String? response = await createFlyService(requestData);
 
-      if (response != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Viagem criada com sucesso: ${response}')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao criar viagem.')),
-        );
-      }
+      setState(() {
+        _responseMessage = response != null
+            ? 'Viagem criada com sucesso: ${response}'
+            : 'Erro ao criar viagem.';
+      });
     }
   }
 
@@ -287,6 +284,20 @@ class _FlyPageState extends State<FlyPage> {
                   child: Text('Criar Viagem'),
                 ),
               ),
+              if (_responseMessage != null) ...[
+  SizedBox(height: 20.0),
+  Card(
+    elevation: 4.0,
+    child: Padding(
+      padding: EdgeInsets.all(16.0),
+      child: SelectableText(
+        _responseMessage!,
+        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+      ),
+    ),
+  ),
+]
+
             ],
           ),
         ),
