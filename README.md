@@ -19,5 +19,5 @@ Primeiro, no seu terminal, execute o seguinte comando para clonar o repositório
 Feito isso, vamos instalar o projeto:
 
 1. `flutter pub get`: Instalar dependências necessárias;
-1.1. `flutter devices` (Opcional): Caso queira escolher um dispositivo manualmentemente antes de iniciar o aplicativo;
-2. `flutter run`: Executar o aplicativo no emulador web ou dispositivo móvel.
+2. `flutter devices` (Opcional): Caso queira conferir os dispositivos disponíveis na sua máquina para rodar o aplicativo;
+3. `flutter run`: Executar o aplicativo no emulador web ou dispositivo móvel.
