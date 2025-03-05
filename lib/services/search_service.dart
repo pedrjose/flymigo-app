@@ -10,7 +10,6 @@ Future<Map<String, dynamic>?> fetchFirstItem(String id) async {
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(response.body);
 
-      // Verifica se "Voos" está presente no JSON
       if (data.containsKey("Voos")) {
         print("Tipo de 'Voos': ${data["Voos"].runtimeType}");
         print("Conteúdo de 'Voos': ${data["Voos"]}");
@@ -21,7 +20,6 @@ Future<Map<String, dynamic>?> fetchFirstItem(String id) async {
           print("Tipo do primeiro item de 'Voos': ${firstFly.runtimeType}");
           print("Conteúdo do primeiro item de 'Voos': $firstFly");
 
-          // Retorna o primeiro voo se for um Map
           if (firstFly is Map<String, dynamic>) {
             return firstFly;
           } else {
@@ -34,7 +32,6 @@ Future<Map<String, dynamic>?> fetchFirstItem(String id) async {
         print("Erro: 'Voos' não encontrado no JSON.");
       }
 
-      // Verifica se "items" está presente e é uma lista
       if (data.containsKey('items') && data['items'] is List<dynamic> && data['items'].isNotEmpty) {
         print("Primeiro item de 'items': ${data['items'][0]}");
         return data['items'][0];
