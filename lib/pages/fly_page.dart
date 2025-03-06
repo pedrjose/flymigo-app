@@ -1,6 +1,6 @@
 import '../helpers/fly_helper.dart';
-import '../services/fly_service.dart';
 import 'package:flutter/material.dart';
+import '../services/fly_service.dart';  // Certifique-se de importar o serviço corretamente
 
 class FlyPage extends StatefulWidget {
   @override
@@ -79,7 +79,9 @@ class _FlyPageState extends State<FlyPage> {
         'Tipo': _tripType,
       };
 
-      String? response = await createFlyService(requestData);
+      // Instanciar o serviço FlyService e chamar o método createFly
+      FlyService flyService = FlyService();
+      String? response = await flyService.createFly(requestData);
 
       setState(() {
         _responseMessage = response != null
@@ -112,10 +114,7 @@ class _FlyPageState extends State<FlyPage> {
                   ),
                 ),
                 items: ['Ida', 'IdaVolta']
-                    .map((trip) => DropdownMenuItem<String>(
-                          value: trip,
-                          child: Text(trip),
-                        ))
+                    .map((trip) => DropdownMenuItem<String>(value: trip, child: Text(trip)))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -134,21 +133,19 @@ class _FlyPageState extends State<FlyPage> {
                 },
               ),
               SizedBox(height: 10.0),
-                            Autocomplete<String>(
+              Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   if (textEditingValue.text.isEmpty) {
                     return const Iterable<String>.empty();
                   }
                   return airlines.where((String option) {
-                    return option.toLowerCase().contains(
-                        textEditingValue.text.toLowerCase());
+                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
                   });
                 },
                 onSelected: (String selection) {
                   _flyAirline.text = selection;
                 },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onFieldSubmitted) {
+                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
                   return TextFormField(
                     controller: controller,
                     focusNode: focusNode,
@@ -179,8 +176,7 @@ class _FlyPageState extends State<FlyPage> {
                     return const Iterable<String>.empty();
                   }
                   return airports.where((String option) {
-                    return option.toLowerCase().contains(
-                        textEditingValue.text.toLowerCase());
+                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
                   });
                 },
                 onSelected: (String selection) {
@@ -221,8 +217,7 @@ class _FlyPageState extends State<FlyPage> {
                     return const Iterable<String>.empty();
                   }
                   return airports.where((String option) {
-                    return option.toLowerCase().contains(
-                        textEditingValue.text.toLowerCase());
+                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
                   });
                 },
                 onSelected: (String selection) {
@@ -298,7 +293,7 @@ class _FlyPageState extends State<FlyPage> {
                   readOnly: true,
                 ),
               ],
-              SizedBox(height: 20.0),
+              SizedBox(height: 10.0),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(

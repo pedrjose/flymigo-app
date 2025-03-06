@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/search_service.dart';
 import "../helpers/search_helper.dart";
+import '../services/search_service.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -13,6 +13,8 @@ class _SearchPageState extends State<SearchPage> {
   String? errorMessage;
   double? totalTax;
 
+  final TravelService _travelService = TravelService(baseUrl: "https://buscamilhas.mock.gralmeidan.dev");
+
   Future<void> _searchTravel() async {
     setState(() {
       travel = null;
@@ -21,11 +23,10 @@ class _SearchPageState extends State<SearchPage> {
     });
 
     try {
-      final response = await fetchFirstItem(_idController.text);
+      final response = await _travelService.fetchFirstItem(_idController.text);
       setState(() {
         travel = response;
 
-       
         int numAdults = response!['QuantidadeAdultos'] ?? 1; 
         int numChildren = response['QuantidadeCriancas'] ?? 0; 
         int numBabies = response['QuantidadeBebes'] ?? 0;
@@ -100,7 +101,6 @@ class _SearchPageState extends State<SearchPage> {
               Text("Embarcação: ${travel!['Embarque']}", style: TextStyle(fontSize: 16)),
               Text("Desembarcação: ${travel!['Desembarque']}", style: TextStyle(fontSize: 16)),
               SizedBox(height: 10.0),
-              // Display the calculated total tax
               Text(
                 "Taxa Total: \$ ${totalTax?.toStringAsFixed(2) ?? '0.00'}",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
