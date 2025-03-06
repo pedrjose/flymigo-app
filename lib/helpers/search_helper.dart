@@ -1,5 +1,3 @@
-// lib/helpers/search_helpers.dart
-
 double calculateTax(List<dynamic> valores, int qtdAdultos, int qtdCriancas, int qtdBebes) {
   double total = 0.0;
 

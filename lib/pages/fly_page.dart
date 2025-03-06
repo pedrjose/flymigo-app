@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import '../helpers/fly_helper.dart';
 import '../services/fly_service.dart';
+import 'package:flutter/material.dart';
 
 class FlyPage extends StatefulWidget {
   @override
@@ -9,7 +9,15 @@ class FlyPage extends StatefulWidget {
 
 class _FlyPageState extends State<FlyPage> {
   List<String> airports = [];
-  List<String> airlines = ['AMERICAN AIRLINES', 'GOL', 'IBERIA', 'INTERLINE', 'LATAM', 'AZUL', 'TAP'];
+  List<String> airlines = [
+    'AMERICAN AIRLINES',
+    'GOL',
+    'IBERIA',
+    'INTERLINE',
+    'LATAM',
+    'AZUL',
+    'TAP'
+  ];
 
   final TextEditingController _flyAirline = TextEditingController();
   final TextEditingController _originAirport = TextEditingController();
@@ -28,7 +36,14 @@ class _FlyPageState extends State<FlyPage> {
   @override
   void initState() {
     super.initState();
-    airports = generateAirportCombinations();
+    fetchAirports();
+  }
+
+  void fetchAirports() async {
+    final result = await generateAirportsArray();
+    setState(() {
+      airports = result!;
+    });
   }
 
   void _selectDate(BuildContext context, bool isReturnDate) {
@@ -119,7 +134,7 @@ class _FlyPageState extends State<FlyPage> {
                 },
               ),
               SizedBox(height: 10.0),
-              Autocomplete<String>(
+                            Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
                   if (textEditingValue.text.isEmpty) {
                     return const Iterable<String>.empty();
@@ -158,7 +173,9 @@ class _FlyPageState extends State<FlyPage> {
               SizedBox(height: 10.0),
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (textEditingValue.text.isEmpty) {
+                  if (airports == null) {
+                    return const Iterable<String>.empty();
+                  } else if (airports.isEmpty) {
                     return const Iterable<String>.empty();
                   }
                   return airports.where((String option) {
@@ -169,33 +186,38 @@ class _FlyPageState extends State<FlyPage> {
                 onSelected: (String selection) {
                   _originAirport.text = selection;
                 },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onFieldSubmitted) {
-                  return TextFormField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      hintText: 'Digite ou selecione o aeroporto de origem',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, selecione um aeroporto de origem';
-                      }
-                      return null;
-                    },
-                  );
+                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                  return airports == null
+                      ? Text("Carregando...")
+                      : airports.isEmpty
+                          ? Text("")
+                          : TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                                hintText: 'Digite ou selecione o aeroporto de origem',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, selecione um aeroporto de origem';
+                                }
+                                return null;
+                              },
+                            );
                 },
               ),
               SizedBox(height: 10.0),
               Autocomplete<String>(
                 optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (textEditingValue.text.isEmpty) {
+                  if (airports == null) {
+                    return const Iterable<String>.empty();
+                  } else if (airports.isEmpty) {
                     return const Iterable<String>.empty();
                   }
                   return airports.where((String option) {
@@ -206,27 +228,30 @@ class _FlyPageState extends State<FlyPage> {
                 onSelected: (String selection) {
                   _destinationAirport.text = selection;
                 },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onFieldSubmitted) {
-                  return TextFormField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      hintText: 'Digite ou selecione o aeroporto de destino',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, selecione um aeroporto de destino';
-                      }
-                      return null;
-                    },
-                  );
+                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                  return airports == null
+                      ? Text("Carregando...")
+                      : airports.isEmpty
+                          ? Text("")
+                          : TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                                hintText: 'Digite ou selecione o aeroporto de destino',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, selecione um aeroporto de destino';
+                                }
+                                return null;
+                              },
+                            );
                 },
               ),
               SizedBox(height: 10.0),
@@ -285,19 +310,18 @@ class _FlyPageState extends State<FlyPage> {
                 ),
               ),
               if (_responseMessage != null) ...[
-  SizedBox(height: 20.0),
-  Card(
-    elevation: 4.0,
-    child: Padding(
-      padding: EdgeInsets.all(16.0),
-      child: SelectableText(
-        _responseMessage!,
-        style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-      ),
-    ),
-  ),
-]
-
+                SizedBox(height: 20.0),
+                Card(
+                  elevation: 4.0,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: SelectableText(
+                      _responseMessage!,
+                      style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ]
             ],
           ),
         ),
