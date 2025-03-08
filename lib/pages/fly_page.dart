@@ -1,6 +1,6 @@
 import '../helpers/fly_helper.dart';
 import 'package:flutter/material.dart';
-import '../services/fly_service.dart'; 
+import '../services/fly_service.dart';
 import 'ticket_page.dart';
 
 class FlyPage extends StatefulWidget {
@@ -9,69 +9,60 @@ class FlyPage extends StatefulWidget {
 }
 
 class _FlyPageState extends State<FlyPage> {
-  List<String> airports = [];
-  List<String> airlines = [
-    'AMERICAN AIRLINES',
-    'GOL',
-    'IBERIA',
-    'INTERLINE',
-    'LATAM',
-    'AZUL',
-    'TAP'
+  final List<String> airlines = [
+    'AMERICAN AIRLINES', 'GOL', 'IBERIA', 'INTERLINE', 'LATAM', 'AZUL', 'TAP'
   ];
-
+  
   final TextEditingController _flyAirline = TextEditingController();
   final TextEditingController _originAirport = TextEditingController();
   final TextEditingController _destinationAirport = TextEditingController();
   final TextEditingController _departureDateController = TextEditingController();
   final TextEditingController _returnDateController = TextEditingController();
-
+  
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  
   DateTime? _departureDate;
   DateTime? _returnDate;
-
+  List<String> airports = [];
   String? _tripType = 'Ida';
   String? _responseMessage;
-
+  
   @override
   void initState() {
     super.initState();
-    fetchAirports();
+    _fetchAirports();
   }
 
-  void fetchAirports() async {
+  Future<void> _fetchAirports() async {
     final result = await generateAirportsArray();
-    setState(() {
-      airports = result!;
-    });
+    setState(() => airports = result ?? []);
   }
 
-  void _selectDate(BuildContext context, bool isReturnDate) {
-    showDatePicker(
+  void _selectDate(BuildContext context, bool isReturnDate) async {
+    final pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
-    ).then((pickedDate) {
-      if (pickedDate != null) {
-        setState(() {
-          if (isReturnDate) {
-            _returnDate = pickedDate;
-            _returnDateController.text = '${_returnDate!.toLocal()}'.split(' ')[0];
-          } else {
-            _departureDate = pickedDate;
-            _departureDateController.text = '${_departureDate!.toLocal()}'.split(' ')[0];
-          }
-        });
-      }
-    });
+    );
+    if (pickedDate != null) {
+      setState(() {
+        if (isReturnDate) {
+          _returnDate = pickedDate;
+          _returnDateController.text = _formatDate(_returnDate);
+        } else {
+          _departureDate = pickedDate;
+          _departureDateController.text = _formatDate(_departureDate);
+        }
+      });
+    }
   }
 
+  String _formatDate(DateTime? date) => date != null ? '${date.toLocal()}'.split(' ')[0] : '';
+
   Future<void> _createFlight() async {
-    print(formatDate(_departureDateController.text));
-    if (_formKey.currentState!.validate()) {
-      Map<String, dynamic> requestData = {
+    if (_formKey.currentState?.validate() ?? false) {
+      final requestData = {
         'Companhias': [_flyAirline.text],
         'DataIda': formatDate(_departureDateController.text),
         'DataVolta': _returnDateController.text.isEmpty ? null : formatDate(_returnDateController.text),
@@ -80,22 +71,11 @@ class _FlyPageState extends State<FlyPage> {
         'Tipo': _tripType,
       };
 
-      FlyService flyService = FlyService();
-      String? response = await flyService.createFly(requestData);
-
-      setState(() {
-        _responseMessage = response != null
-            ? 'Viagem criada com sucesso: ${response}'
-            : 'Erro ao criar viagem.';
-      });
-
+      final response = await FlyService().createFly(requestData);
+      setState(() => _responseMessage = response != null ? 'Viagem criada com sucesso: $response' : 'Erro ao criar viagem.');
+      
       if (response != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TicketPage(travelId: response),
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => TicketPage(travelId: response)));
       }
     }
   }
@@ -103,236 +83,92 @@ class _FlyPageState extends State<FlyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Criar Viagem')),
+      appBar: AppBar(title: const Text('Criar Viagem')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
-              DropdownButtonFormField<String>(
-                value: _tripType,
-                decoration: InputDecoration(
-                  labelText: 'Tipo de Viagem',
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
-                ),
-                items: ['Ida', 'IdaVolta']
-                    .map((trip) => DropdownMenuItem<String>(value: trip, child: Text(trip)))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _tripType = value;
-                    if (_tripType == 'Ida') {
-                      _returnDate = null;
-                      _returnDateController.clear();
-                    }
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, selecione o tipo de viagem';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10.0),
-              Autocomplete<String>(
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (textEditingValue.text.isEmpty) {
-                    return const Iterable<String>.empty();
-                  }
-                  return airlines.where((String option) {
-                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                  });
-                },
-                onSelected: (String selection) {
-                  _flyAirline.text = selection;
-                },
-                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                  return TextFormField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      hintText: 'Selecione uma companhia aérea',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, selecione uma companhia aérea';
-                      }
-                      return null;
-                    },
-                  );
-                },
-              ),
-              SizedBox(height: 10.0),
-              Autocomplete<String>(
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (airports == null) {
-                    return const Iterable<String>.empty();
-                  } else if (airports.isEmpty) {
-                    return const Iterable<String>.empty();
-                  }
-                  return airports.where((String option) {
-                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                  });
-                },
-                onSelected: (String selection) {
-                  _originAirport.text = selection;
-                },
-                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                  return airports == null
-                      ? Text("Carregando...")
-                      : airports.isEmpty
-                          ? Text("")
-                          : TextFormField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                hintText: 'Digite ou selecione o aeroporto de origem',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor, selecione um aeroporto de origem';
-                                }
-                                return null;
-                              },
-                            );
-                },
-              ),
-              SizedBox(height: 10.0),
-              Autocomplete<String>(
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (airports == null) {
-                    return const Iterable<String>.empty();
-                  } else if (airports.isEmpty) {
-                    return const Iterable<String>.empty();
-                  }
-                  return airports.where((String option) {
-                    return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                  });
-                },
-                onSelected: (String selection) {
-                  _destinationAirport.text = selection;
-                },
-                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                  return airports == null
-                      ? Text("Carregando...")
-                      : airports.isEmpty
-                          ? Text("")
-                          : TextFormField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                hintText: 'Digite ou selecione o aeroporto de destino',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Por favor, selecione um aeroporto de destino';
-                                }
-                                return null;
-                              },
-                            );
-                },
-              ),
-              SizedBox(height: 10.0),
-              TextFormField(
-                controller: _departureDateController,
-                decoration: InputDecoration(
-                  labelText: 'Data de Ida',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(context, false),
-                  ),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
-                ),
-                validator: (value) {
-                  if (_departureDate == null) {
-                    return 'Por favor, selecione a data de ida';
-                  }
-                  return null;
-                },
-                readOnly: true,
-              ),
-              SizedBox(height: 10.0),
-              if (_tripType == 'IdaVolta') ...[
-                TextFormField(
-                  controller: _returnDateController,
-                  decoration: InputDecoration(
-                    labelText: 'Data de Volta',
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, true),
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (_returnDate == null) {
-                      return 'Por favor, selecione a data de volta';
-                    }
-                    return null;
-                  },
-                  readOnly: true,
-                ),
-              ],
-              SizedBox(height: 20.0),
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: _createFlight,
-                  child: Text('Criar Viagem'),
-                ),
-              ),
-              if (_responseMessage != null) ...[
-                SizedBox(height: 20.0),
-                Card(
-                  elevation: 4.0,
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: SelectableText(
-                      _responseMessage!,
-                      style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ]
+              _buildDropdown(),
+              const SizedBox(height: 10.0),
+              _buildAutocompleteField(_flyAirline, 'Selecione uma companhia aérea', airlines),
+              const SizedBox(height: 10.0),
+              _buildAutocompleteField(_originAirport, 'Digite ou selecione o aeroporto de origem', airports),
+              const SizedBox(height: 10.0),
+              _buildAutocompleteField(_destinationAirport, 'Digite ou selecione o aeroporto de destino', airports),
+              const SizedBox(height: 10.0),
+              _buildDateField('Data de Ida', _departureDateController, () => _selectDate(context, false)),
+              const SizedBox(height: 20.0),
+              if (_tripType == 'IdaVolta') _buildDateField('Data de Volta', _returnDateController, () => _selectDate(context, true)),
+              const SizedBox(height: 20.0),
+              _buildSubmitButton(),
+              if (_responseMessage != null) _buildResponseMessage(),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _tripType,
+      decoration: const InputDecoration(labelText: 'Tipo de Viagem', border: OutlineInputBorder()),
+      items: ['Ida', 'IdaVolta'].map((trip) => DropdownMenuItem(value: trip, child: Text(trip))).toList(),
+      onChanged: (value) => setState(() {
+        _tripType = value;
+        if (_tripType == 'Ida') _returnDateController.clear();
+      }),
+      validator: (value) => value?.isEmpty ?? true ? 'Por favor, selecione o tipo de viagem' : null,
+    );
+  }
+
+  Widget _buildAutocompleteField(TextEditingController controller, String hint, List<String> options) {
+    return Autocomplete<String>(
+      optionsBuilder: (textEditingValue) => options.where((option) => option.toLowerCase().contains(textEditingValue.text.toLowerCase())),
+      onSelected: (selection) => controller.text = selection,
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) => TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        decoration: InputDecoration(labelText: hint, border: const OutlineInputBorder()),
+        validator: (value) => value?.isEmpty ?? true ? 'Por favor, preencha este campo' : null,
+      ),
+    );
+  }
+
+  Widget _buildDateField(String label, TextEditingController controller, VoidCallback onTap) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: onTap),
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) => value?.isEmpty ?? true ? 'Por favor, selecione a $label' : null,
+      readOnly: true,
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return Center(
+      child: ElevatedButton(
+        onPressed: _createFlight,
+        child: const Text('Criar Viagem'),
+      ),
+    );
+  }
+
+  Widget _buildResponseMessage() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0),
+      child: Card(
+        elevation: 4.0,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SelectableText(
+            _responseMessage!,
+            style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
           ),
         ),
       ),
