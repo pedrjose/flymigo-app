@@ -11,7 +11,7 @@ double calculateTax(List<dynamic> valores, int qtdAdultos, int qtdCriancas, int 
     double precoBebe = valor["Bebe"] ?? 0.0; 
     double taxaEmbarque = valor["TaxaEmbarque"] ?? 0.0; 
 
-    total += (precoAdulto * qtdAdultos) + (precoCrianca * qtdCriancas) + (precoBebe * qtdBebes) + (taxaEmbarque * (qtdAdultos + qtdCriancas + qtdBebes));
+    total = (precoAdulto * qtdAdultos) + (precoCrianca * qtdCriancas) + (precoBebe * qtdBebes) + (taxaEmbarque * (qtdAdultos + qtdCriancas + qtdBebes));
   }
 
   return total;

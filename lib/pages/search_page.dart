@@ -9,6 +9,10 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _idController = TextEditingController();
+  final TextEditingController _adultsController = TextEditingController();
+  final TextEditingController _childrenController = TextEditingController();
+  final TextEditingController _babiesController = TextEditingController();
+
   Map<String, dynamic>? travel;
   String? errorMessage;
   double? totalTax;
@@ -24,15 +28,22 @@ class _SearchPageState extends State<SearchPage> {
 
     try {
       final response = await _travelService.fetchFirstItem(_idController.text);
-      setState(() {
-        travel = response;
+      
+      if (response != null) {
+        setState(() {
+          travel = response;
 
-        int numAdults = response!['QuantidadeAdultos'] ?? 1; 
-        int numChildren = response['QuantidadeCriancas'] ?? 0; 
-        int numBabies = response['QuantidadeBebes'] ?? 0;
+          int numAdults = int.tryParse(_adultsController.text) ?? 1;
+          int numChildren = int.tryParse(_childrenController.text) ?? 0;
+          int numBabies = int.tryParse(_babiesController.text) ?? 0;
 
-        totalTax = calculateTax(response['Valor'], numAdults, numChildren, numBabies);
-      });
+          totalTax = calculateTax(response['Valor'], numAdults, numChildren, numBabies);
+        });
+      } else {
+        setState(() {
+          errorMessage = "Erro: resposta da viagem é nula.";
+        });
+      }
     } catch (e) {
       setState(() {
         errorMessage = "Error fetching travel details: ${e.toString()}";
@@ -63,6 +74,48 @@ class _SearchPageState extends State<SearchPage> {
                       controller: _idController,
                       decoration: InputDecoration(
                         labelText: 'Viagem ID',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    TextField(
+                      controller: _adultsController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Número de Adultos',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    TextField(
+                      controller: _childrenController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Número de Crianças',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    TextField(
+                      controller: _babiesController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Número de Bebês',
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey),
                         ),

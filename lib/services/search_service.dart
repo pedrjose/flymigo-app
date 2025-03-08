@@ -16,15 +16,12 @@ class TravelService {
         Map<String, dynamic> data = jsonDecode(response.body);
 
         if (data.containsKey("Voos")) {
-          print("Tipo de 'Voos': ${data["Voos"].runtimeType}");
-          print("Conteúdo de 'Voos': ${data["Voos"]}");
+          
 
           if (data["Voos"] is List && data["Voos"].isNotEmpty) {
             var firstFly = data["Voos"][0];
 
-            print("Tipo do primeiro item de 'Voos': ${firstFly.runtimeType}");
-            print("Conteúdo do primeiro item de 'Voos': $firstFly");
-
+            
             if (firstFly is Map<String, dynamic>) {
               return firstFly;
             } else {

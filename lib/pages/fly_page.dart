@@ -1,6 +1,7 @@
 import '../helpers/fly_helper.dart';
 import 'package:flutter/material.dart';
 import '../services/fly_service.dart';  // Certifique-se de importar o serviço corretamente
+import 'ticket_page.dart';  // Certifique-se de importar a página TicketPage
 
 class FlyPage extends StatefulWidget {
   @override
@@ -88,6 +89,16 @@ class _FlyPageState extends State<FlyPage> {
             ? 'Viagem criada com sucesso: ${response}'
             : 'Erro ao criar viagem.';
       });
+
+      if (response != null) {
+        // Navegar para a TicketPage passando o ID da viagem
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TicketPage(travelId: response),
+          ),
+        );
+      }
     }
   }
 
@@ -290,10 +301,16 @@ class _FlyPageState extends State<FlyPage> {
                       borderSide: BorderSide(color: Colors.blue),
                     ),
                   ),
+                  validator: (value) {
+                    if (_returnDate == null) {
+                      return 'Por favor, selecione a data de volta';
+                    }
+                    return null;
+                  },
                   readOnly: true,
                 ),
               ],
-              SizedBox(height: 10.0),
+              SizedBox(height: 20.0),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
