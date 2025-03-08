@@ -1,7 +1,7 @@
 import '../helpers/fly_helper.dart';
 import 'package:flutter/material.dart';
-import '../services/fly_service.dart';  // Certifique-se de importar o serviço corretamente
-import 'ticket_page.dart';  // Certifique-se de importar a página TicketPage
+import '../services/fly_service.dart'; 
+import 'ticket_page.dart';
 
 class FlyPage extends StatefulWidget {
   @override
@@ -80,7 +80,6 @@ class _FlyPageState extends State<FlyPage> {
         'Tipo': _tripType,
       };
 
-      // Instanciar o serviço FlyService e chamar o método createFly
       FlyService flyService = FlyService();
       String? response = await flyService.createFly(requestData);
 
@@ -91,7 +90,6 @@ class _FlyPageState extends State<FlyPage> {
       });
 
       if (response != null) {
-        // Navegar para a TicketPage passando o ID da viagem
         Navigator.push(
           context,
           MaterialPageRoute(
