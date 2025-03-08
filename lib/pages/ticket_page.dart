@@ -5,7 +5,7 @@ import "../helpers/search_helper.dart";
 class TicketPage extends StatefulWidget {
   final String travelId;
 
-  TicketPage({required this.travelId});
+  const TicketPage({required this.travelId, Key? key}) : super(key: key);
 
   @override
   _TicketPageState createState() => _TicketPageState();
@@ -37,25 +37,24 @@ class _TicketPageState extends State<TicketPage> {
 
     try {
       final response = await _travelService.fetchFirstItem(widget.travelId);
-
       if (response != null) {
         setState(() {
           travel = response;
-          _adultsController.text = '1'; 
-          _childrenController.text = '0';
-          _babiesController.text = '0';
+          _resetPassengerCounts();
           _calculateTotalTax();
         });
       } else {
-        setState(() {
-          errorMessage = "Erro: resposta da viagem é nula.";
-        });
+        setState(() => errorMessage = "Erro: resposta da viagem é nula.");
       }
     } catch (e) {
-      setState(() {
-        errorMessage = "Erro ao buscar detalhes da viagem: ${e.toString()}";
-      });
+      setState(() => errorMessage = "Erro ao buscar detalhes da viagem: ${e.toString()}");
     }
+  }
+
+  void _resetPassengerCounts() {
+    _adultsController.text = '1';
+    _childrenController.text = '0';
+    _babiesController.text = '0';
   }
 
   void _calculateTotalTax() {
@@ -64,63 +63,55 @@ class _TicketPageState extends State<TicketPage> {
     int numAdults = int.tryParse(_adultsController.text) ?? 1;
     int numChildren = int.tryParse(_childrenController.text) ?? 0;
 
-    
     var valor = travel!['Valor']?[0] ?? {};
-    
+
     double valorAdulto = valor['Adulto'] ?? 0;
     double valorCrianca = valor['Crianca'] ?? 0;
     double taxaEmbarque = valor['TaxaEmbarque'] ?? 0;
 
-    double total = (valorAdulto * numAdults) + (valorCrianca * numChildren) + (taxaEmbarque * (numAdults + numChildren));
-
     setState(() {
-      totalTax = total;
+      totalTax = (valorAdulto * numAdults) + (valorCrianca * numChildren) + (taxaEmbarque * (numAdults + numChildren));
     });
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(labelText: label),
+      onChanged: (value) => _calculateTotalTax(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Detalhes da Passagem')),
+      appBar: AppBar(title: const Text('Detalhes da Passagem')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: travel == null
-            ? Center(child: errorMessage != null ? Text(errorMessage!, style: TextStyle(color: Colors.red)) : CircularProgressIndicator())
+            ? Center(
+                child: errorMessage != null
+                    ? Text(errorMessage!, style: const TextStyle(color: Colors.red))
+                    : const CircularProgressIndicator(),
+              )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Companhia: ${travel!['Companhia']}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Text("Origem: ${travel!['Origem']}", style: TextStyle(fontSize: 16)),
-                  Text("Destino: ${travel!['Destino']}", style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 10.0),
-                  Divider(),
-
-                  TextField(
-                    controller: _adultsController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Número de Adultos'),
-                    onChanged: (value) => _calculateTotalTax(),
-                  ),
-                  TextField(
-                    controller: _childrenController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Número de Crianças'),
-                    onChanged: (value) => _calculateTotalTax(),
-                  ),
-                  TextField(
-                    controller: _babiesController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: 'Número de Bebês'),
-                    onChanged: (value) => _calculateTotalTax(),
-                  ),
-
-                  SizedBox(height: 10.0),
+                  Text("Companhia: ${travel!['Companhia']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text("Origem: ${travel!['Origem']}", style: const TextStyle(fontSize: 16)),
+                  Text("Destino: ${travel!['Destino']}", style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 10.0),
+                  const Divider(),
+                  _buildTextField('Número de Adultos', _adultsController),
+                  _buildTextField('Número de Crianças', _childrenController),
+                  _buildTextField('Número de Bebês', _babiesController),
+                  const SizedBox(height: 10.0),
                   Text(
                     "Taxa Total: R\$ ${totalTax?.toStringAsFixed(2) ?? '0.00'}",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20.0),
-                  
+                  const SizedBox(height: 20.0),
                   Center(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -128,7 +119,7 @@ class _TicketPageState extends State<TicketPage> {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: _searchTravel,
-                      child: Text('Recalcular Taxa'),
+                      child: const Text('Recalcular Taxa'),
                     ),
                   ),
                 ],
